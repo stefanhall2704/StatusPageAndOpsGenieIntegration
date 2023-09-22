@@ -20,9 +20,9 @@ function IncidentForm() {
     // Fetch Statuspage components when the component mounts
     // Replace 'your-api-key-goes-here' and 'your-page-id' with your actual API key and page ID
 
-    const apiKey = "OAuth d487df27-78b9-42b5-8f38-e1084f0ef665";
+    const apiKey = `OAuth ${process.env.REACT_APP_STATUSPAGE_API_KEY}`;
 
-    const apiUrl = "https://api.statuspage.io/v1/pages/v8pxqxntb33r/components";
+    const apiUrl = `https://api.statuspage.io/v1/pages/${process.env.REACT_APP_STATUSPAGE_PAGE_ID}/components`;
     const headers = {
       Authorization: apiKey,
       "Content-Type": "application/json",
@@ -119,14 +119,14 @@ function IncidentForm() {
       },
     };
     try {
-      const apiKey = "OAuth d487df27-78b9-42b5-8f38-e1084f0ef665";
+      const apiKey = `OAuth ${process.env.REACT_APP_STATUSPAGE_API_KEY}`;
       const headers = {
         Authorization: apiKey,
         "Content-Type": "application/json",
       };
       console.log("Status Page Body:", statusPageBody);
       const response = await axios.post(
-        "https://api.statuspage.io/v1/pages/v8pxqxntb33r/incidents",
+        `https://api.statuspage.io/v1/pages/${process.env.REACT_APP_STATUSPAGE_PAGE_ID}/incidents`,
         statusPageBody,
         { headers: headers }
       );

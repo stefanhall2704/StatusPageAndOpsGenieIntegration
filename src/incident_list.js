@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 
 function IncidentTable({ data, title }) {
   const [expandedIncidentId, setExpandedIncidentId] = useState(null);
-  const [filterImpact, setFilterImpact] = useState(""); 
-  const [searchTerm, setSearchTerm] = useState(""); 
+  const [filterImpact, setFilterImpact] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const toggleCollapse = (incidentId) => {
     if (expandedIncidentId === incidentId) {
@@ -13,7 +13,6 @@ function IncidentTable({ data, title }) {
       setExpandedIncidentId(incidentId);
     }
   };
-
 
   const formatDate = (dateTimeString) => {
     const options = {
@@ -27,10 +26,9 @@ function IncidentTable({ data, title }) {
     return date.toLocaleDateString(undefined, options);
   };
 
-
   const filteredData = data.filter((incident) => {
     if (filterImpact === "") {
-      return true; 
+      return true;
     }
     return incident.impact === filterImpact;
   });
@@ -38,7 +36,7 @@ function IncidentTable({ data, title }) {
     const base_url = "/update/incident/";
     const incident_id = data.id;
     return base_url.concat(incident_id);
-  }
+  };
 
   const searchedData = filteredData.filter((incident) => {
     if (searchTerm === "") {
@@ -75,7 +73,10 @@ function IncidentTable({ data, title }) {
         {title && (
           <thead>
             <tr>
-              <th colSpan="7" className="bg-blue-500 underline bold text-lg text-white py-2 px-3">
+              <th
+                colSpan="7"
+                className="bg-blue-500 underline bold text-lg text-white py-2 px-3"
+              >
                 {title}
               </th>
             </tr>
@@ -96,7 +97,9 @@ function IncidentTable({ data, title }) {
           {searchedData.map((incident) => (
             <React.Fragment key={incident.id}>
               <tr className="border-t border-blue-200">
-                <td className="py-2 px-3 hover:underline"><a href={update_url(incident)}>{incident.name}</a></td>
+                <td className="py-2 px-3 hover:underline">
+                  <a href={update_url(incident)}>{incident.name}</a>
+                </td>
                 <td className="py-2 px-3">{incident.impact}</td>
                 <td className="py-2 px-3">{incident.status}</td>
                 <td className="py-2 px-3">{formatDate(incident.created_at)}</td>
@@ -115,7 +118,7 @@ function IncidentTable({ data, title }) {
                 </td>
                 <td className="py-2 px-3">
                   <Link
-                    to={`https://manage.statuspage.io/pages/v8pxqxntb33r/incidents/${incident.id}`}
+                    to={`https://manage.statuspage.io/pages/${process.env.REACT_APP_STATUSPAGE_PAGE_ID}/incidents/${incident.id}`}
                     className="text-blue-500 hover:underline"
                   >
                     Details
@@ -172,16 +175,16 @@ export default function AllIncidentsPage() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const apiKey = "OAuth d487df27-78b9-42b5-8f38-e1084f0ef665";
+    const apiKey = `OAuth ${process.env.REACT_APP_STATUSPAGE_API_KEY}`;
     const headers = {
       Authorization: apiKey,
       "Content-Type": "application/json",
     };
 
     const unresolvedIncidentsUrl =
-      "https://api.statuspage.io/v1/pages/v8pxqxntb33r/incidents/unresolved";
+      `https://api.statuspage.io/v1/pages/${process.env.REACT_APP_STATUSPAGE_PAGE_ID}/incidents/unresolved`;
     const resolvedIncidentsUrl =
-      "https://api.statuspage.io/v1/pages/v8pxqxntb33r/incidents";
+      `https://api.statuspage.io/v1/pages/${process.env.REACT_APP_STATUSPAGE_PAGE_ID}/incidents`;
 
     const fetchIncidents = (url, isResolved) => {
       fetch(url, {
@@ -215,19 +218,24 @@ export default function AllIncidentsPage() {
   }
 
   return (
-    <div>      
-    <h2 className="text-3xl flex justify-center">Incident Management System</h2>
-    <div className="create-incident-container">
-      <Link
-        to="/create/incident"
-        className="px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-      >
-        Create Incident
-      </Link>
-    </div>
+    <div>
+      <h2 className="text-3xl flex justify-center">
+        Incident Management System
+      </h2>
+      <div className="create-incident-container">
+        <Link
+          to="/create/incident"
+          className="px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+        >
+          Create Incident
+        </Link>
+      </div>
       {unresolvedIncidents.length > 0 && (
         <>
-          <IncidentTable data={unresolvedIncidents} title="Unresolved Incidents" />
+          <IncidentTable
+            data={unresolvedIncidents}
+            title="Unresolved Incidents"
+          />
         </>
       )}
 
