@@ -5,6 +5,7 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import CreateIncidentPage from "./incident_form.js";
+import IncidentUpdateForm from "./incident_update";
 
 const router = createBrowserRouter([
   {
@@ -14,6 +15,10 @@ const router = createBrowserRouter([
   {
     path: "create/incident",
     element: <CreateIncidentPage />,
+  },
+  {
+    path: "update/incident/:incident_id",
+    element: <IncidentUpdateForm />,
   },
 ]);
 
