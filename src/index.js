@@ -1,16 +1,17 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
-import App from "./App";
+import "./App.css";
 import reportWebVitals from "./reportWebVitals";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import CreateIncidentPage from "./incident_form.js";
 import IncidentUpdateForm from "./incident_update";
+import AllIncidentsPage from "./incident_list";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: <AllIncidentsPage />,
   },
   {
     path: "create/incident",
