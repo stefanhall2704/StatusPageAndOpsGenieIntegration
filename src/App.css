@@ -4,6 +4,11 @@
 .App {
   text-align: center;
 }
+.create-incident-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-right: 12.5%; /* 1/8th of the screen width */
+}
 
 .App-logo {
   height: 40vmin;

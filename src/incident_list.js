@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
-function IncidentTable({ data }) {
+function IncidentTable({ data, title }) {
   const [expandedIncidentId, setExpandedIncidentId] = useState(null);
   const [filterImpact, setFilterImpact] = useState(""); // State for filtering by impact
   const [searchTerm, setSearchTerm] = useState(""); // State for searching by incident name
@@ -49,9 +49,6 @@ function IncidentTable({ data }) {
 
   return (
     <div className="w-3/4 mx-auto rounded-lg overflow-hidden">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-        Incident List
-      </h2>
       <div className="mb-4 flex justify-between items-center">
         <div>
           {/* Filter by Impact Dropdown */}
@@ -65,7 +62,6 @@ function IncidentTable({ data }) {
             <option value="major">Major</option>
             <option value="minor">Minor</option>
           </select>
-          {/* Search Bar */}
           <input
             type="text"
             placeholder="Search by Incident Name"
@@ -74,15 +70,17 @@ function IncidentTable({ data }) {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        {/* Button to Create Incident (Now at top right) */}
-        <Link
-          to="/create/incident"
-          className="px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-        >
-          Create Incident
-        </Link>
       </div>
       <table className="min-w-full bg-white border border-blue-200">
+        {title && (
+          <thead>
+            <tr>
+              <th colSpan="7" className="bg-blue-500 underline bold text-lg text-white py-2 px-3">
+                {title}
+              </th>
+            </tr>
+          </thead>
+        )}
         <thead>
           <tr className="bg-blue-500 text-white">
             <th className="py-2 px-3 text-left">Incident Name</th>
@@ -222,20 +220,15 @@ export default function AllIncidentsPage() {
       {/* Display Unresolved Incidents table */}
       {unresolvedIncidents.length > 0 && (
         <>
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-            Unresolved Incidents
-          </h2>
-          <IncidentTable data={unresolvedIncidents} />
+          <IncidentTable data={unresolvedIncidents} title="Unresolved Incidents" />
         </>
       )}
 
       {/* Display Resolved Incidents table */}
       {resolvedIncidents.length > 0 && (
         <>
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-            Resolved Incidents
-          </h2>
-          <IncidentTable data={resolvedIncidents} />
+          <IncidentTable data={resolvedIncidents} title="Resolved Incidents" />
+
         </>
       )}
     </div>
