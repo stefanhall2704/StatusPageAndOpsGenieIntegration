@@ -17,8 +17,8 @@ function IncidentUpdateForm() {
 
   useEffect(() => {
     // Fetch incident data for the specified incident_id
-    const apiKey = "OAuth d487df27-78b9-42b5-8f38-e1084f0ef665";
-    const apiUrl = `https://api.statuspage.io/v1/pages/v8pxqxntb33r/incidents/${incident_id}`;
+    const apiKey = `OAuth ${process.env.REACT_APP_STATUSPAGE_API_KEY}`;
+    const apiUrl = `https://api.statuspage.io/v1/pages/${process.env.REACT_APP_STATUSPAGE_PAGE_ID}/incidents/${incident_id}`;
     const headers = {
       Authorization: apiKey,
       "Content-Type": "application/json",
@@ -98,12 +98,12 @@ function IncidentUpdateForm() {
       },
     };
     try {
-      const apiKey = "OAuth d487df27-78b9-42b5-8f38-e1084f0ef665";
+      const apiKey = `OAuth ${process.env.REACT_APP_STATUSPAGE_API_KEY}`;
       const headers = {
         Authorization: apiKey,
         "Content-Type": "application/json",
       };
-      const baseUrl = "https://api.statuspage.io/v1/pages/v8pxqxntb33r/incidents/";
+      const baseUrl = `https://api.statuspage.io/v1/pages/${process.env.REACT_APP_STATUSPAGE_PAGE_ID}/incidents/`;
       const apiURL = baseUrl.concat(incident_id);
       const response = await axios.patch(
         apiURL,
