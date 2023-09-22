@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 
 function IncidentTable({ data, title }) {
   const [expandedIncidentId, setExpandedIncidentId] = useState(null);
-  const [filterImpact, setFilterImpact] = useState(""); // State for filtering by impact
-  const [searchTerm, setSearchTerm] = useState(""); // State for searching by incident name
+  const [filterImpact, setFilterImpact] = useState(""); 
+  const [searchTerm, setSearchTerm] = useState(""); 
 
   const toggleCollapse = (incidentId) => {
     if (expandedIncidentId === incidentId) {
@@ -14,7 +14,7 @@ function IncidentTable({ data, title }) {
     }
   };
 
-  // Function to format the date
+
   const formatDate = (dateTimeString) => {
     const options = {
       hour: "2-digit",
@@ -27,10 +27,10 @@ function IncidentTable({ data, title }) {
     return date.toLocaleDateString(undefined, options);
   };
 
-  // Filter incidents by impact
+
   const filteredData = data.filter((incident) => {
     if (filterImpact === "") {
-      return true; // No impact filter selected, show all incidents
+      return true; 
     }
     return incident.impact === filterImpact;
   });
@@ -39,10 +39,10 @@ function IncidentTable({ data, title }) {
     const incident_id = data.id;
     return base_url.concat(incident_id);
   }
-  // Search incidents by incident name
+
   const searchedData = filteredData.filter((incident) => {
     if (searchTerm === "") {
-      return true; // No search term, show all incidents
+      return true;
     }
     return incident.name.toLowerCase().includes(searchTerm.toLowerCase());
   });
@@ -51,13 +51,13 @@ function IncidentTable({ data, title }) {
     <div className="w-3/4 mx-auto rounded-lg overflow-hidden">
       <div className="mb-4 flex justify-between items-center">
         <div>
-          {/* Filter by Impact Dropdown */}
           <select
             className="px-3 py-2 border border-gray-300 rounded-md"
             value={filterImpact}
             onChange={(e) => setFilterImpact(e.target.value)}
           >
             <option value="">All Impacts</option>
+            <option value="maintenance">Maintenance</option>
             <option value="critical">Critical</option>
             <option value="major">Major</option>
             <option value="minor">Minor</option>
@@ -172,7 +172,6 @@ export default function AllIncidentsPage() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Fetch unresolved and resolved incidents
     const apiKey = "OAuth d487df27-78b9-42b5-8f38-e1084f0ef665";
     const headers = {
       Authorization: apiKey,
@@ -216,21 +215,23 @@ export default function AllIncidentsPage() {
   }
 
   return (
-    <div>
-      {/* Display Unresolved Incidents table */}
+    <div>      
+    <h2 className="text-3xl flex justify-center">Incident Management System</h2>
+    <div className="create-incident-container">
+      <Link
+        to="/create/incident"
+        className="px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+      >
+        Create Incident
+      </Link>
+    </div>
       {unresolvedIncidents.length > 0 && (
         <>
           <IncidentTable data={unresolvedIncidents} title="Unresolved Incidents" />
         </>
       )}
 
-      {/* Display Resolved Incidents table */}
-      {resolvedIncidents.length > 0 && (
-        <>
-          <IncidentTable data={resolvedIncidents} title="Resolved Incidents" />
-
-        </>
-      )}
+      <IncidentTable data={resolvedIncidents} title="Resolved Incidents" />
     </div>
   );
 }
