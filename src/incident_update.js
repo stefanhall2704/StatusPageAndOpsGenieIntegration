@@ -9,6 +9,8 @@ function IncidentUpdateForm() {
   const [incidentStatus, setIncidentStatus] = useState("");
   const [componentStatuses, setComponentStatuses] = useState({});
   const [affectedComponents, setAffectedComponents] = useState([]);
+  const [componentIds, setComponentIds] = useState([]);
+
 
   useEffect(() => {
     // Fetch incident data for the specified incident_id
@@ -28,7 +30,6 @@ function IncidentUpdateForm() {
 
         // Get component data directly from the response
         const componentData = response.data.components || [];
-
         // Filter and get unique affected component IDs and their names
         const uniqueComponentData = Array.from(
           new Set(componentData.map((component) => component.id))
@@ -42,7 +43,10 @@ function IncidentUpdateForm() {
             status: componentWithStatus.status, // Include status
           };
         });
-
+        const componentIDs = Array.from(
+          new Set(componentData.map((component) => component.id))
+        );
+        setComponentIds(componentIDs);
         setAffectedComponents(uniqueComponentData);
 
         // Initialize componentStatuses with default values for each component
@@ -65,6 +69,7 @@ function IncidentUpdateForm() {
     setImpactOverride(e.target.value);
   };
 
+
   const handleComponentStatusChange = (componentId, e) => {
     // Update the status of the selected component in componentStatuses
     setComponentStatuses((prevComponentStatuses) => ({
@@ -73,13 +78,52 @@ function IncidentUpdateForm() {
     }));
   };
 
+
+  const updateStatusPageIncident = async (
+    incidentStatus,
+    impactOverride,
+    componentIds,
+    componentStatuses,
+  ) => {
+
+    let statusPageBody = {
+      "incident": {
+        "status": incidentStatus,
+        "impact_override": impactOverride,
+        "components": componentStatuses,
+        "component_ids": componentIds,
+      },
+    };
+    try {
+      const apiKey = "OAuth d487df27-78b9-42b5-8f38-e1084f0ef665";
+      const headers = {
+        Authorization: apiKey,
+        "Content-Type": "application/json",
+      };
+      const baseUrl = "https://api.statuspage.io/v1/pages/v8pxqxntb33r/incidents/";
+      const apiURL = baseUrl.concat(incident_id);
+      const response = await axios.patch(
+        apiURL,
+        statusPageBody,
+        { headers: headers }
+      );
+      console.log("Status Page Incident Created:", response.data);
+    } catch (error) {
+      console.error("Error creating Status Page incident:", error);
+      console.log("Response data:", error.response.data);
+    }
+  };
+
+
+
   const handleSubmit = (e) => {
     e.preventDefault();
-
+    updateStatusPageIncident(incidentStatus, impactOverride, componentIds, componentStatuses);
     // You can send API requests to update the incident and component statuses here
     console.log("Updated Impact Override:", impactOverride);
     console.log("Updated Incident Status:", incidentStatus);
     console.log("Updated Component Statuses:", componentStatuses);
+    console.log(componentIds);
   };
 
   return (
