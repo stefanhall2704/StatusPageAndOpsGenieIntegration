@@ -13,6 +13,7 @@ function IncidentForm() {
   const [notifications, setNotifications] = useState(false); // Updated to a boolean
   const [outageType, setOutageType] = useState("");
   const [status, setStatus] = useState("");
+  const [priority, setPriority] = useState("");
   const [components, setComponents] = useState([]);
   const [error, setError] = useState(null);
 
@@ -52,6 +53,9 @@ function IncidentForm() {
   const handleDescriptionChange = (e) => {
     setDescription(e.target.value);
   };
+  const handlePriorityChange = (e) => {
+    setPriority(e.target.value);
+  };
 
   const handleImpactChange = (e) => {
     setImpact(e.target.value);
@@ -65,19 +69,36 @@ function IncidentForm() {
     setStatus(e.target.value);
   };
 
-  const createOpsGenieIncident = async (title, description) => {
+  const createOpsGenieIncident = async (
+    title,
+    description,
+    priority,
+    notifications
+  ) => {
+    let statusPageBody = {
+      message: title,
+      description: description,
+      priotity: priority,
+      notifyStakeholder: notifications,
+    };
     try {
-      const response = await axios.post("OPS_GENIE_API_URL", {
-        title,
-        description,
-        // Other required fields for OpsGenie
-      });
-      console.log("OpsGenie Incident Created:", response.data);
+      const apiKey = `GenieKey ${process.env.REACT_APP_OPSGENIE_API_KEY}`;
+      const headers = {
+        Authorization: apiKey,
+        "Content-Type": "application/json",
+      };
+      console.log("Status Page Body:", statusPageBody);
+      const response = await axios.post(
+        `https://api.opsgenie.com/v1/incidents/create`,
+        statusPageBody,
+        { headers: headers }
+      );
+      console.log("Status Page Incident Created:", response.data);
     } catch (error) {
-      console.error("Error creating OpsGenie incident:", error);
+      console.error("Error creating Status Page incident:", error);
+      console.log("Response data:", error.response.data);
     }
   };
-
   const createStatusPageIncident = async (
     title,
     description,
@@ -85,7 +106,8 @@ function IncidentForm() {
     componentIds,
     notifications,
     outageType,
-    status
+    status,
+    priority
   ) => {
     let componentOutageMap = {};
     for (let i = 0; i < componentIds.length; i++) {
@@ -96,8 +118,6 @@ function IncidentForm() {
         name: title,
         status: status,
         impact_override: impact,
-        scheduled_for: "2023-09-16T04:00:00Z",
-        scheduled_until: "2023-09-16T18:00:00Z",
         scheduled_remind_prior: false,
         auto_transition_to_maintenance_state: false,
         auto_transition_to_operational_state: false,
@@ -131,6 +151,17 @@ function IncidentForm() {
         { headers: headers }
       );
       console.log("Status Page Incident Created:", response.data);
+      const opsGenieFormData = {
+        title: title,
+        description: description,
+        priority: priority,
+        notifications: notifications,
+      };
+      const opsGenieResponse = await axios.post(
+        "http://localhost:5000/createOpsGenieIncident",
+        opsGenieFormData
+      );
+      console.log("OpsGenie Incident Created:", opsGenieResponse.data);
     } catch (error) {
       console.error("Error creating Status Page incident:", error);
       console.log("Response data:", error.response.data);
@@ -143,7 +174,6 @@ function IncidentForm() {
     // TODO: Handle form submission and create incidents
     console.log("Title:", title);
     console.log("Description:", description);
-    createOpsGenieIncident(title, description);
     createStatusPageIncident(
       title,
       description,
@@ -151,7 +181,8 @@ function IncidentForm() {
       componentIds,
       notifications,
       outageType,
-      status
+      status,
+      priority
     );
     navigate("/");
   };
@@ -197,6 +228,31 @@ function IncidentForm() {
               className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:border-blue-500"
               required
             />
+          </div>
+
+          <div className="mb-4">
+            <label
+              htmlFor="priority"
+              className="block text-gray-600 font-bold mb-2"
+            >
+              Priority:
+            </label>
+            <select
+              id="priority"
+              value={priority}
+              onChange={handlePriorityChange}
+              className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:border-blue-500"
+              required
+            >
+              <option value="" disabled>
+                Select priority
+              </option>
+              <option value="P1">P1</option>
+              <option value="P2">P2</option>
+              <option value="P3">P3</option>
+              <option value="P4">P4</option>
+              <option value="P5">P5</option>
+            </select>
           </div>
           <div className="mb-4">
             <label
@@ -304,10 +360,10 @@ function IncidentForm() {
               <option value="" disabled>
                 Select status
               </option>
-              <option value="scheduled">Scheduled</option>
-              <option value="in_progress">In Progress</option>
-              <option value="verifying">Verifying</option>
-              <option value="completed">Completed</option>
+              <option value="investigating">Investigating</option>
+              <option value="identified">Identified</option>
+              <option value="monitoring">Monitoring</option>
+              <option value="resolved">Resolved</option>
             </select>
           </div>
           <button

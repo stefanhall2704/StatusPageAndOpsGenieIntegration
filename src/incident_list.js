@@ -1,11 +1,38 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 function IncidentTable({ data, title }) {
   const [expandedIncidentId, setExpandedIncidentId] = useState(null);
   const [filterImpact, setFilterImpact] = useState("");
+  const [opsgenieIncidentData, setOpsgenieIncidentData] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
 
+
+  useEffect(() => {
+    const fetchOpsgenieData = async (incidentName) => {
+      try {
+        const opsgenieData = await fetchOpsgenieIncident(incidentName);
+        setOpsgenieIncidentData((prevData) => ({
+          ...prevData,
+          [incidentName]: opsgenieData,
+        }));
+      } catch (error) {
+        console.error("Error fetching Opsgenie incident:", error);
+      }
+    };
+  
+    // Iterate through data and fetch Opsgenie data for each incident
+    data.forEach(async (incident) => {
+      await fetchOpsgenieData(incident.name); // Wait for the data to be fetched
+    });
+  
+    // Move the console.log statement here
+    console.log(opsgenieIncidentData);
+  }, [data]);
+  
+  
+  
   const toggleCollapse = (incidentId) => {
     if (expandedIncidentId === incidentId) {
       setExpandedIncidentId(null);
@@ -32,12 +59,43 @@ function IncidentTable({ data, title }) {
     }
     return incident.impact === filterImpact;
   });
-  const update_url = (data) => {
-    const base_url = "/update/incident/";
-    const incident_id = data.id;
-    return base_url.concat(incident_id);
+  const update_url = (data, opsGenieId) => {
+    if (opsGenieId) {
+      return `/update/incident/${data.id}?opsGenieId=${opsGenieId}`;
+    } else {
+      return `/update/incident/${data.id}`;
+    }
   };
 
+  const fetchOpsgenieIncident = async (incidentName) => {
+    try {
+      const apiKey = `GenieKey 2188fe89-117e-4a52-9e24-fbae62c4ed04`;
+      const headers = {
+        Authorization: apiKey,
+        "Content-Type": "application/json",
+      };
+      const response = await axios.get(
+        "http://localhost:5000/getOpsGenieIncident",
+        { params: { message: incidentName }, headers } // Use params to pass the incidentName
+      );
+      
+      // Ensure that the response contains data and the first incident
+      if (response.data.data && response.data.data.length > 0) {
+        const incidentData = response.data.data[0];
+        console.log("Opsgenie API Response:", incidentData); // Log the incident data
+        return incidentData;
+      } else {
+        console.warn("Opsgenie API Response is empty for:", incidentName);
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching Opsgenie incident:", error);
+      return null;
+    }
+  };
+  
+  
+  
   const searchedData = filteredData.filter((incident) => {
     if (searchTerm === "") {
       return true;
@@ -70,19 +128,15 @@ function IncidentTable({ data, title }) {
         </div>
       </div>
       <table className="min-w-full bg-white border border-blue-200">
-        {title && (
-          <thead>
-            <tr>
-              <th
-                colSpan="7"
-                className="bg-blue-500 underline bold text-lg text-white py-2 px-3"
-              >
-                {title}
-              </th>
-            </tr>
-          </thead>
-        )}
         <thead>
+          <tr>
+            <th
+              colSpan="8" 
+              className="bg-blue-500 underline bold text-lg text-white py-2 px-3"
+            >
+              {title}
+            </th>
+          </tr>
           <tr className="bg-blue-500 text-white">
             <th className="py-2 px-3 text-left">Incident Name</th>
             <th className="py-2 px-3 text-left">Impact</th>
@@ -91,6 +145,7 @@ function IncidentTable({ data, title }) {
             <th className="py-2 px-3 text-left">Resolved At</th>
             <th className="py-2 px-3 text-left">Updates</th>
             <th className="py-2 px-3 text-left">Details</th>
+            <th className="py-2 px-3 text-left">Opsgenie Incident</th>
           </tr>
         </thead>
         <tbody>
@@ -98,7 +153,9 @@ function IncidentTable({ data, title }) {
             <React.Fragment key={incident.id}>
               <tr className="border-t border-blue-200">
                 <td className="py-2 px-3 hover:underline">
-                  <a href={update_url(incident)}>{incident.name}</a>
+                  <a href={update_url(incident, opsgenieIncidentData[incident.name]?.id || false)}>
+                    {incident.name}
+                  </a>
                 </td>
                 <td className="py-2 px-3">{incident.impact}</td>
                 <td className="py-2 px-3">{incident.status}</td>
@@ -123,6 +180,19 @@ function IncidentTable({ data, title }) {
                   >
                     Details
                   </Link>
+                </td>
+                <td className="py-2 px-3">
+                  {opsgenieIncidentData && opsgenieIncidentData[incident.name] ? (
+                    <a
+                      href={`https://cfainstitute1.app.opsgenie.com/incident/detail/${opsgenieIncidentData[incident.name].id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {opsgenieIncidentData[incident.name].message}
+                    </a>
+                  ) : (
+                    "No OpsGenie Incident found"
+                  )}
                 </td>
               </tr>
               {expandedIncidentId === incident.id && (
