@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+
 
 function IncidentUpdateForm() {
+  const navigate = useNavigate();
+
   const { incident_id } = useParams();
   const [incidentData, setIncidentData] = useState(null);
   const [impactOverride, setImpactOverride] = useState("");
@@ -124,6 +127,7 @@ function IncidentUpdateForm() {
     console.log("Updated Incident Status:", incidentStatus);
     console.log("Updated Component Statuses:", componentStatuses);
     console.log(componentIds);
+    navigate("/");
   };
 
   return (

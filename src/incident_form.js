@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 //const config = require("./config.js");
 
 function IncidentForm() {
+  const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [impact, setImpact] = useState("");
@@ -151,15 +153,7 @@ function IncidentForm() {
       outageType,
       status
     );
-
-    // Clear the form fields after submission
-    setTitle("");
-    setDescription("");
-    setImpact("");
-    setComponentIds([]);
-    setNotifications(false);
-    setOutageType("");
-    setStatus("");
+    navigate("/");
   };
 
   if (error) {
