@@ -1,4 +1,4 @@
-# Your Project Name
+# Incident Management System
 
 Welcome to the README for your project. This document provides instructions on how to set up and run the project locally.
 
