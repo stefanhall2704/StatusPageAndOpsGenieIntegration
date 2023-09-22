@@ -9,7 +9,6 @@ function IncidentUpdateForm() {
   const [incidentStatus, setIncidentStatus] = useState("");
   const [componentStatuses, setComponentStatuses] = useState({});
   const [affectedComponents, setAffectedComponents] = useState([]);
-  const [selectedComponent, setSelectedComponent] = useState("");
 
   useEffect(() => {
     // Fetch incident data for the specified incident_id
@@ -27,25 +26,29 @@ function IncidentUpdateForm() {
         setImpactOverride(response.data.impact_override);
         setIncidentStatus(response.data.status);
 
-        // Extract affected components from incident updates
-        const affectedComponentsData = response.data.incident_updates.map(
-          (update) => update.affected_components
-        );
+        // Get component data directly from the response
+        const componentData = response.data.components || [];
 
-        // Flatten the array of affected components into a single array
-        const flattenedComponents = [].concat(...affectedComponentsData);
+        // Filter and get unique affected component IDs and their names
+        const uniqueComponentData = Array.from(
+          new Set(componentData.map((component) => component.id))
+        ).map((uniqueId) => {
+          const componentWithStatus = componentData.find(
+            (component) => component.id === uniqueId
+          );
+          return {
+            id: uniqueId,
+            name: componentWithStatus.name,
+            status: componentWithStatus.status, // Include status
+          };
+        });
 
-        // Filter and get unique affected component IDs
-        const uniqueComponentIds = [
-          ...new Set(flattenedComponents.map((component) => component.code)),
-        ];
-
-        setAffectedComponents(uniqueComponentIds);
+        setAffectedComponents(uniqueComponentData);
 
         // Initialize componentStatuses with default values for each component
         const defaultComponentStatuses = {};
-        uniqueComponentIds.forEach((componentId) => {
-          defaultComponentStatuses[componentId] = ""; // You can set a default status here if needed
+        uniqueComponentData.forEach((component) => {
+          defaultComponentStatuses[component.id] = component.status; // Set status as default
         });
         setComponentStatuses(defaultComponentStatuses);
       })
@@ -53,28 +56,26 @@ function IncidentUpdateForm() {
         console.error("Error fetching incident data:", error);
       });
   }, [incident_id]);
+
   const handleIncidentStatusChange = (e) => {
     setIncidentStatus(e.target.value);
   };
+
   const handleImpactOverrideChange = (e) => {
     setImpactOverride(e.target.value);
   };
 
-
-
-  const handleComponentSelectChange = (event) => {
-    // Ensure that selectedComponent is set to a valid value
-    setSelectedComponent(event.target.value);
-  };
-  const handleSubmit = (e) => {
-    e.preventDefault();
-  
+  const handleComponentStatusChange = (componentId, e) => {
     // Update the status of the selected component in componentStatuses
     setComponentStatuses((prevComponentStatuses) => ({
       ...prevComponentStatuses,
-      [selectedComponent]: componentStatuses[selectedComponent] || '', // Use the current status as default
+      [componentId]: e.target.value,
     }));
-  
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
     // You can send API requests to update the incident and component statuses here
     console.log("Updated Impact Override:", impactOverride);
     console.log("Updated Incident Status:", incidentStatus);
@@ -89,7 +90,7 @@ function IncidentUpdateForm() {
             Update Incident
           </h2>
           <form onSubmit={handleSubmit}>
-          <div className="mb-4">
+            <div className="mb-4">
               <label
                 htmlFor="impactOverride"
                 className="block text-gray-600 font-bold mb-2"
@@ -136,25 +137,32 @@ function IncidentUpdateForm() {
                 htmlFor="componentStatus"
                 className="block text-gray-600 font-bold mb-2"
               >
-                Select Affected Component:
+                Select Affected Components:
               </label>
 
               {affectedComponents.length > 0 && (
-                <select
-                  id="componentStatus"
-                  value={selectedComponent} // Remove the || "" here
-                  onChange={handleComponentSelectChange}
-                  className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:border-blue-500"
-                >
-                  <option value="" disabled>
-                    Select a Component
-                  </option>
-                  {affectedComponents.map((componentId) => (
-                    <option key={componentId} value={componentId}>
-                      {componentId}
-                    </option>
+                <div>
+                  {affectedComponents.map((component) => (
+                    <div key={component.id} className="mb-2">
+                      <label htmlFor={`componentStatus_${component.id}`} className="block text-gray-600 font-bold mb-2">
+                        {component.name} Status:
+                      </label>
+                      <select
+                        id={`componentStatus_${component.id}`}
+                        value={componentStatuses[component.id]}
+                        onChange={(e) => handleComponentStatusChange(component.id, e)}
+                        className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:border-blue-500"
+                      >
+                        
+                        <option value="under_maintenance">Under Maintenance</option>
+                        <option value="degraded_performance">Degraded Performance</option>
+                        <option value="partial_outage">Partial Outage</option>
+                        <option value="operational">Operational</option>
+                        <option value="major_outage">Major Outage</option>
+                      </select>
+                    </div>
                   ))}
-                </select>
+                </div>
               )}
             </div>
             <button

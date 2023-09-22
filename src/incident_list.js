@@ -34,7 +34,11 @@ function IncidentTable({ data }) {
     }
     return incident.impact === filterImpact;
   });
-
+  const update_url = (data) => {
+    const base_url = "/update/incident/";
+    const incident_id = data.id;
+    return base_url.concat(incident_id);
+  }
   // Search incidents by incident name
   const searchedData = filteredData.filter((incident) => {
     if (searchTerm === "") {
@@ -94,7 +98,7 @@ function IncidentTable({ data }) {
           {searchedData.map((incident) => (
             <React.Fragment key={incident.id}>
               <tr className="border-t border-blue-200">
-                <td className="py-2 px-3">{incident.name}</td>
+                <td className="py-2 px-3 hover:underline"><a href={update_url(incident)}>{incident.name}</a></td>
                 <td className="py-2 px-3">{incident.impact}</td>
                 <td className="py-2 px-3">{incident.status}</td>
                 <td className="py-2 px-3">{formatDate(incident.created_at)}</td>
