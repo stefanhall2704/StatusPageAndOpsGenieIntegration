@@ -5,14 +5,16 @@ import { useParams, useNavigate } from "react-router-dom";
 
 function IncidentUpdateForm() {
   const navigate = useNavigate();
-
   const { incident_id } = useParams();
+  const [opsGenieId, setOpsGenieId] = useState(""); // Declare opsGenieId using useState
   const [incidentData, setIncidentData] = useState(null);
   const [impactOverride, setImpactOverride] = useState("");
   const [incidentStatus, setIncidentStatus] = useState("");
   const [componentStatuses, setComponentStatuses] = useState({});
   const [affectedComponents, setAffectedComponents] = useState([]);
   const [componentIds, setComponentIds] = useState([]);
+  const [opsgenieIncidentStatus, setOpsgenieIncidentStatus] = useState("");
+  const [opsgenieIncidentData, setOpsgenieIncidentData] = useState("");
 
 
   useEffect(() => {
@@ -23,14 +25,14 @@ function IncidentUpdateForm() {
       Authorization: apiKey,
       "Content-Type": "application/json",
     };
-
+  
     axios
       .get(apiUrl, { headers })
       .then((response) => {
         setIncidentData(response.data);
         setImpactOverride(response.data.impact_override);
         setIncidentStatus(response.data.status);
-
+  
         // Get component data directly from the response
         const componentData = response.data.components || [];
         // Filter and get unique affected component IDs and their names
@@ -51,18 +53,61 @@ function IncidentUpdateForm() {
         );
         setComponentIds(componentIDs);
         setAffectedComponents(uniqueComponentData);
-
+  
         // Initialize componentStatuses with default values for each component
         const defaultComponentStatuses = {};
         uniqueComponentData.forEach((component) => {
           defaultComponentStatuses[component.id] = component.status; // Set status as default
         });
         setComponentStatuses(defaultComponentStatuses);
+  
+        // Fetch Opsgenie incident data here when incident data is available
+        const queryParameters = new URLSearchParams(window.location.search);
+        const opsGenieId = queryParameters.get("opsGenieId");
+        fetchOpsgenieIncident(opsGenieId)
+          .then((opsGenieIncidentData) => {
+            // Set the Opsgenie incident data in state
+            setOpsgenieIncidentData(opsGenieIncidentData);
+  
+            // Assuming Opsgenie incident status is a property like opsGenieIncidentData.status
+            // Set the initial incidentStatus state based on the fetched data
+
+  
+            // ... Continue with your existing code ...
+          })
+          .catch((error) => {
+            console.error("Error fetching Opsgenie incident data:", error);
+          });
       })
       .catch((error) => {
         console.error("Error fetching incident data:", error);
       });
   }, [incident_id]);
+  
+  
+  useEffect(() => {
+    // Fetch Opsgenie incident data only when opsGenieId changes
+    const queryParameters = new URLSearchParams(window.location.search);
+    const opsGenieId = queryParameters.get("opsGenieId");
+    if (opsGenieId) {
+      fetchOpsgenieIncident(opsGenieId)
+        .then((opsGenieIncidentData) => {
+          // Set the Opsgenie incident data in state
+          setOpsgenieIncidentData(opsGenieIncidentData);
+  
+          // Assuming Opsgenie incident status is a property like opsGenieIncidentData.status
+          // Set the initial incidentStatus state based on the fetched data
+
+        
+  
+          // ... Continue with your existing code ...
+        })
+        .catch((error) => {
+          console.error("Error fetching Opsgenie incident data:", error);
+        });
+    }
+  }, [opsGenieId]);
+  
 
   const handleIncidentStatusChange = (e) => {
     setIncidentStatus(e.target.value);
@@ -80,8 +125,26 @@ function IncidentUpdateForm() {
       [componentId]: e.target.value,
     }));
   };
+  const handleOpsgenieIncidentStatusChange = (e) => {
+    // Update the Opsgenie incident status in state
+    setOpsgenieIncidentStatus(e.target.value);
+  };
+  
 
-
+  const fetchOpsgenieIncident = async (opsGenieId) => {
+    try {
+      const apiUrl = `http://localhost:5001/getOpsGenieIncidentById?incidentId=${opsGenieId}`;
+      console.log("Fetching Opsgenie incident data from:", apiUrl);
+      const response = await axios.get(apiUrl);
+      const initialOpsgenieIncidentStatus = response.data.data.status;
+      setOpsgenieIncidentStatus(initialOpsgenieIncidentStatus);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching Opsgenie incident data:", error);
+      throw error;
+    }
+  };
+  
   const updateStatusPageIncident = async (
     incidentStatus,
     impactOverride,
@@ -179,6 +242,25 @@ function IncidentUpdateForm() {
                 <option value="verifying">Verifying</option>
                 <option value="completed">Completed</option>
               </select>
+            </div>
+            <div className="mb-4">
+              <label
+                htmlFor="opsgenieIncidentStatus"
+                className="block text-gray-600 font-bold mb-2"
+              >
+                Opsgenie Incident Status:
+              </label>
+              <select
+              id="opsgenieIncidentStatus"
+              value={opsgenieIncidentStatus} // Use 'opsgenieIncidentData' here
+              onChange={handleOpsgenieIncidentStatusChange}
+              className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:border-blue-500"
+            >
+              {/* Define your Opsgenie incident status options here */}
+              <option value="open">Open</option>
+              <option value="resolved">Resolved</option>
+              <option value="closed">Closed</option>
+            </select>
             </div>
             <div className="mb-4">
               <label

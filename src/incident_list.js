@@ -32,7 +32,6 @@ function IncidentTable({ data, title }) {
   }, [data]);
   
   
-  
   const toggleCollapse = (incidentId) => {
     if (expandedIncidentId === incidentId) {
       setExpandedIncidentId(null);
@@ -75,7 +74,7 @@ function IncidentTable({ data, title }) {
         "Content-Type": "application/json",
       };
       const response = await axios.get(
-        "http://localhost:5000/getOpsGenieIncident",
+        "http://localhost:5001/getOpsGenieIncident",
         { params: { message: incidentName }, headers } // Use params to pass the incidentName
       );
       
@@ -144,8 +143,8 @@ function IncidentTable({ data, title }) {
             <th className="py-2 px-3 text-left">Created At</th>
             <th className="py-2 px-3 text-left">Resolved At</th>
             <th className="py-2 px-3 text-left">Updates</th>
-            <th className="py-2 px-3 text-left">Details</th>
-            <th className="py-2 px-3 text-left">Opsgenie Incident</th>
+            <th className="py-2 px-3 text-left">Status Page Incident</th>
+            <th className="py-2 px-3 text-left">OpsGenie Incident</th>
           </tr>
         </thead>
         <tbody>
@@ -169,27 +168,30 @@ function IncidentTable({ data, title }) {
                     className="text-blue-500 hover:underline"
                   >
                     {expandedIncidentId === incident.id
-                      ? "Collapse"
-                      : "Updates"}
+                      ? "Collapse Updates"
+                      : "Expand Updates"}
                   </button>
                 </td>
                 <td className="py-2 px-3">
                   <Link
                     to={`https://manage.statuspage.io/pages/${process.env.REACT_APP_STATUSPAGE_PAGE_ID}/incidents/${incident.id}`}
                     className="text-blue-500 hover:underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    Details
+                    Status Page Incident
                   </Link>
                 </td>
                 <td className="py-2 px-3">
                   {opsgenieIncidentData && opsgenieIncidentData[incident.name] ? (
-                    <a
-                      href={`https://cfainstitute1.app.opsgenie.com/incident/detail/${opsgenieIncidentData[incident.name].id}`}
+                    <Link
+                      to={`https://cfainstitute1.app.opsgenie.com/incident/detail/${opsgenieIncidentData[incident.name].id}`}
+                      className="text-blue-500 hover:underline"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      {opsgenieIncidentData[incident.name].message}
-                    </a>
+                      OpsGenie Incident
+                    </Link>
                   ) : (
                     "No OpsGenie Incident found"
                   )}
@@ -201,7 +203,7 @@ function IncidentTable({ data, title }) {
                     <div className="bg-gray-100 p-4 rounded-lg">
                       {/* Display Incident Updates in a Table */}
                       <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                        Incident Updates
+                        Status Page Incident Updates
                       </h3>
                       <table className="min-w-full">
                         <thead>
