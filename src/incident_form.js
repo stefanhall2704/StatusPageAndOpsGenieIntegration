@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-//const config = require("./config.js");
 
 function IncidentForm() {
   const navigate = useNavigate();
@@ -10,7 +9,7 @@ function IncidentForm() {
   const [description, setDescription] = useState("");
   const [impact, setImpact] = useState("");
   const [componentIds, setComponentIds] = useState([]);
-  const [notifications, setNotifications] = useState(false); // Updated to a boolean
+  const [notifications, setNotifications] = useState(false);
   const [outageType, setOutageType] = useState("");
   const [status, setStatus] = useState("");
   const [priority, setPriority] = useState("");
@@ -18,11 +17,7 @@ function IncidentForm() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Fetch Statuspage components when the component mounts
-    // Replace 'your-api-key-goes-here' and 'your-page-id' with your actual API key and page ID
-
     const apiKey = `OAuth ${process.env.REACT_APP_STATUSPAGE_API_KEY}`;
-
     const apiUrl = `https://api.statuspage.io/v1/pages/${process.env.REACT_APP_STATUSPAGE_PAGE_ID}/components`;
     const headers = {
       Authorization: apiKey,
@@ -69,36 +64,6 @@ function IncidentForm() {
     setStatus(e.target.value);
   };
 
-  const createOpsGenieIncident = async (
-    title,
-    description,
-    priority,
-    notifications
-  ) => {
-    let statusPageBody = {
-      message: title,
-      description: description,
-      priotity: priority,
-      notifyStakeholder: notifications,
-    };
-    try {
-      const apiKey = `GenieKey ${process.env.REACT_APP_OPSGENIE_API_KEY}`;
-      const headers = {
-        Authorization: apiKey,
-        "Content-Type": "application/json",
-      };
-      console.log("Status Page Body:", statusPageBody);
-      const response = await axios.post(
-        `https://api.opsgenie.com/v1/incidents/create`,
-        statusPageBody,
-        { headers: headers }
-      );
-      console.log("Status Page Incident Created:", response.data);
-    } catch (error) {
-      console.error("Error creating Status Page incident:", error);
-      console.log("Response data:", error.response.data);
-    }
-  };
   const createStatusPageIncident = async (
     title,
     description,
@@ -171,7 +136,6 @@ function IncidentForm() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // TODO: Handle form submission and create incidents
     console.log("Title:", title);
     console.log("Description:", description);
     createStatusPageIncident(

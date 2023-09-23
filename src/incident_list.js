@@ -22,13 +22,10 @@ function IncidentTable({ data, title }) {
       }
     };
   
-    // Iterate through data and fetch Opsgenie data for each incident
     data.forEach(async (incident) => {
-      await fetchOpsgenieData(incident.name); // Wait for the data to be fetched
+      await fetchOpsgenieData(incident.name);
     });
   
-    // Move the console.log statement here
-    console.log(opsgenieIncidentData);
   }, [data]);
   
   
@@ -75,13 +72,12 @@ function IncidentTable({ data, title }) {
       };
       const response = await axios.get(
         "http://localhost:5001/getOpsGenieIncident",
-        { params: { message: incidentName }, headers } // Use params to pass the incidentName
+        { params: { message: incidentName }, headers }
       );
       
-      // Ensure that the response contains data and the first incident
       if (response.data.data && response.data.data.length > 0) {
         const incidentData = response.data.data[0];
-        console.log("Opsgenie API Response:", incidentData); // Log the incident data
+        console.log("Opsgenie API Response:", incidentData);
         return incidentData;
       } else {
         console.warn("Opsgenie API Response is empty for:", incidentName);
