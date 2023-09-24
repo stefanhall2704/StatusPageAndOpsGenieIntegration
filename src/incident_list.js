@@ -65,7 +65,7 @@ function IncidentTable({ data, title }) {
 
   const fetchOpsgenieIncident = async (incidentName) => {
     try {
-      const apiKey = `GenieKey 2188fe89-117e-4a52-9e24-fbae62c4ed04`;
+      const apiKey = `GenieKey ${process.env.REACT_APP_OPSGENIE_API_KEY}`;
       const headers = {
         Authorization: apiKey,
         "Content-Type": "application/json",
@@ -194,7 +194,7 @@ function IncidentTable({ data, title }) {
               </tr>
               {expandedIncidentId === incident.id && (
                 <tr>
-                  <td colSpan="7">
+                  <td colSpan="8">
                     <div className="bg-gray-100 p-4 rounded-lg">
                       {/* Display Incident Updates in a Table */}
                       <h3 className="text-lg font-semibold text-gray-800 mb-2">
