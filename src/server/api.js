@@ -12,7 +12,7 @@ app.use(cors());
 
 app.post("/createOpsGenieIncident", async (req, res) => {
   try {
-    const apiKey = `GenieKey 2188fe89-117e-4a52-9e24-fbae62c4ed04`;
+    const apiKey = `GenieKey ${process.env.OPSGENIE_API_KEY}`;
     const headers = {
       Authorization: apiKey,
       "Content-Type": "application/json",
@@ -42,7 +42,7 @@ app.post("/createOpsGenieIncident", async (req, res) => {
 
 app.get("/getOpsGenieIncident", async (req, res) => {
   try {
-    const apiKey = `GenieKey 2188fe89-117e-4a52-9e24-fbae62c4ed04`;
+    const apiKey = `GenieKey ${process.env.OPSGENIE_API_KEY}`;
     const headers = {
       Authorization: apiKey,
       "Content-Type": "application/json",
@@ -64,7 +64,7 @@ app.get("/getOpsGenieIncident", async (req, res) => {
 app.get("/getOpsGenieIncidentById", async (req, res) => {
   try {
     const opsGenieId = req.query.incidentId;
-    const apiKey = `GenieKey 2188fe89-117e-4a52-9e24-fbae62c4ed04`;
+    const apiKey = `GenieKey ${process.env.OPSGENIE_API_KEY}`;
     const headers = {
       Authorization: apiKey,
       "Content-Type": "application/json",

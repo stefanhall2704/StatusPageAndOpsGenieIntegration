@@ -8,6 +8,8 @@ import CreateIncidentPage from "./incident_form.js";
 import IncidentUpdateForm from "./incident_update";
 import AllIncidentsPage from "./incident_list";
 
+const REACT_APP_OPSGENIE_API_KEY = process.env.REACT_APP_OPSGENIE_API_KEY;
+
 const router = createBrowserRouter([
   {
     path: "/",
