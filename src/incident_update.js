@@ -13,6 +13,8 @@ function IncidentUpdateForm() {
   const [affectedComponents, setAffectedComponents] = useState([]);
   const [componentIds, setComponentIds] = useState([]);
   const [opsgenieIncidentStatus, setOpsgenieIncidentStatus] = useState("");
+  const [opsgeniePriority, setOpsgeniePriority] = useState("");
+  const [opsgenieIdInput, setOpsgenieIdInput] = useState("");
 
 
   useEffect(() => {
@@ -91,16 +93,32 @@ function IncidentUpdateForm() {
   const handleOpsgenieIncidentStatusChange = (e) => {
     setOpsgenieIncidentStatus(e.target.value);
   };
+  const handleOpsgenieIdInputChange = (e) => {
+    setOpsgenieIdInput(e.target.value);
+  };
+  
+  const handleLinkOpsgenieIncident = (e) => {
+    e.preventDefault(); // Prevent default form submission behavior
+  
+    fetchOpsgenieIncident(opsgenieIdInput)
+      .then(() => {
+        navigate(`/update/incident/${incident_id}?opsGenieId=${opsgenieIdInput}`)
+      })
+      .catch((error) => {
+        console.error("Error fetching Opsgenie incident data:", error);
+      });
+  };
+  
   
 
   const fetchOpsgenieIncident = async (opsGenieId) => {
     try {
       const apiUrl = `http://localhost:5001/getOpsGenieIncidentById?incidentId=${opsGenieId}`;
-      console.log("Fetching Opsgenie incident data from:", apiUrl);
       const response = await axios.get(apiUrl);
       const initialOpsgenieIncidentStatus = response.data.data.status;
-      console.log(initialOpsgenieIncidentStatus);
+      const initialOpsGenieIncidentPriority = response.data.data.priority;
       setOpsgenieIncidentStatus(initialOpsgenieIncidentStatus);
+      setOpsgeniePriority(initialOpsGenieIncidentPriority);
       return response.data;
     } catch (error) {
       console.error("Error fetching Opsgenie incident data:", error);
@@ -142,12 +160,59 @@ function IncidentUpdateForm() {
       console.log("Response data:", error.response.data);
     }
   };
+const handleOpsgeniePriorityChange = (e) => {
+  setOpsgeniePriority(e.target.value);
+};
+const OpsGeniePriority = () => {
+  return (
+    <div className="mb-4">
+      <label
+        htmlFor="opsgeniePriority"
+        className="block text-gray-600 font-bold mb-2"
+      >
+        Opsgenie Priority:
+      </label>
+      <select
+      id="opsgeniePriority"
+      value={opsgeniePriority}
+      onChange={handleOpsgeniePriorityChange}
+      className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:border-blue-500"
+    >
+      <option value="P1">P1</option>
+      <option value="P2">P2</option>
+      <option value="P3">P3</option>
+      <option value="P4">P4</option>
+      <option value="P5">P5</option>
+    </select>
+  </div>
+  )
+};
 
-const OpsGenieIncidentStatusSelect = () => {
-  const queryParameters = new URLSearchParams(window.location.search);
-  const opsGenieId = queryParameters.get("opsGenieId");
+const HandleManualOpsGenieIncidentLinking = () => {
+  return (
+    <div className="mb-4">
+    <div className="mb-4">
+    <input
+      type="text"
+      placeholder="Enter Opsgenie ID"
+      value={opsgenieIdInput}
+      onChange={handleOpsgenieIdInputChange}
+      className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:border-blue-500"
+    />
+    </div>
+    <div className="mb-4">
+    <button
+      className="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded focus:outline-none hover:bg-blue-700"
+      onClick={handleLinkOpsgenieIncident}
+    >
+      Link Opsgenie Incident
+    </button>
+    </div>
+  </div>
+  )
+};
 
-  if (opsGenieId !== null) {
+const OpsGenieIncidentControls = () => {
   return (
     <div className="mb-4">
       <label
@@ -157,23 +222,31 @@ const OpsGenieIncidentStatusSelect = () => {
         Opsgenie Incident Status:
       </label>
       <select
-      id="opsgenieIncidentStatus"
-      value={opsgenieIncidentStatus}
-      onChange={handleOpsgenieIncidentStatusChange}
-      className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:border-blue-500"
-    >
-      <option value="open">Open</option>
-      <option value="resolved">Resolved</option>
-      <option value="closed">Closed</option>
-    </select>
-  </div>
-  )          
+        id="opsgenieIncidentStatus"
+        value={opsgenieIncidentStatus}
+        onChange={handleOpsgenieIncidentStatusChange}
+        className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:border-blue-500"
+      >
+        <option value="open">Open</option>
+        <option value="resolved">Resolved</option>
+        <option value="closed">Closed</option>
+      </select>
+      <OpsGeniePriority />
+    </div>
+  )
+}
 
+const OpsGenieIncidentStatusSelect = () => {
+  const queryParameters = new URLSearchParams(window.location.search);
+  const opsGenieId = queryParameters.get("opsGenieId");
+
+  if (opsGenieId !== null) {
+  return (
+    <OpsGenieIncidentControls />
+  )          
   } else {
     return (
-      <div>
-        <p> OpsGenie Incident Not linked</p>
-      </div>
+      <HandleManualOpsGenieIncidentLinking />
     )
   }
 }
@@ -271,9 +344,9 @@ const OpsGenieIncidentStatusSelect = () => {
   const SubmitUpdateForm = () => {
     return (
       <form onSubmit={handleSubmit}>
+      <OpsGenieIncidentStatusSelect />
       <IncidentImpact />
       <StatusPageIncidentStatus />
-      <OpsGenieIncidentStatusSelect />
       <div className="mb-4">
         <label
           htmlFor="componentStatus"
@@ -303,10 +376,6 @@ const OpsGenieIncidentStatusSelect = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     updateStatusPageIncident(incidentStatus, impactOverride, componentIds, componentStatuses);
-    console.log("Updated Impact Override:", impactOverride);
-    console.log("Updated Incident Status:", incidentStatus);
-    console.log("Updated Component Statuses:", componentStatuses);
-    console.log(componentIds);
     navigate("/");
   };
 

@@ -77,7 +77,6 @@ function IncidentTable({ data, title }) {
       
       if (response.data.data && response.data.data.length > 0) {
         const incidentData = response.data.data[0];
-        console.log("Opsgenie API Response:", incidentData);
         return incidentData;
       } else {
         console.warn("Opsgenie API Response is empty for:", incidentName);

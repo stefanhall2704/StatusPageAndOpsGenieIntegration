@@ -109,7 +109,6 @@ function IncidentForm() {
         Authorization: apiKey,
         "Content-Type": "application/json",
       };
-      console.log("Status Page Body:", statusPageBody);
       const response = await axios.post(
         `https://api.statuspage.io/v1/pages/${process.env.REACT_APP_STATUSPAGE_PAGE_ID}/incidents`,
         statusPageBody,
@@ -136,8 +135,6 @@ function IncidentForm() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    console.log("Title:", title);
-    console.log("Description:", description);
     createStatusPageIncident(
       title,
       description,
