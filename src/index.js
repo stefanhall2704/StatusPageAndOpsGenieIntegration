@@ -3,32 +3,17 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import "./App.css";
 import reportWebVitals from "./reportWebVitals";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import CreateIncidentPage from "./incident_form.js";
-import IncidentUpdateForm from "./incident_update";
-import AllIncidentsPage from "./incident_list";
+import { authProvider } from './authProvider';
+import App from "./App";
+import { AzureAD } from 'react-aad-msal';
 
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <AllIncidentsPage />,
-  },
-  {
-    path: "create/incident",
-    element: <CreateIncidentPage />,
-  },
-  {
-    path: "update/incident/:incident_id",
-    element: <IncidentUpdateForm />,
-  },
-]);
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  <React.StrictMode>
-    <RouterProvider router={router} />
-  </React.StrictMode>
+  <AzureAD provider={authProvider} forceLogin={true}>
+    <App />
+  </AzureAD>
 );
 
 // If you want to start measuring performance in your app, pass a function
