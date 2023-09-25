@@ -1,10 +1,44 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
-function IncidentTable({ data, title }) {
+function IncidentTable({ data, title, itemsPerPage }) {
   const [expandedIncidentId, setExpandedIncidentId] = useState(null);
   const [filterImpact, setFilterImpact] = useState("");
+  const [opsgenieIncidentData, setOpsgenieIncidentData] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
+  useEffect(() => {
+    const fetchOpsgenieData = async (incidentName) => {
+      try {
+        const opsgenieData = await fetchOpsgenieIncident(incidentName);
+        setOpsgenieIncidentData((prevData) => ({
+          ...prevData,
+          [incidentName]: opsgenieData,
+        }));
+      } catch (error) {
+        console.error("Error fetching Opsgenie incident:", error);
+      }
+    };
+  
+    data.forEach(async (incident) => {
+      await fetchOpsgenieData(incident.name);
+    });
+  
+  }, [data, filterImpact, searchTerm]);
+  
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  
+
+
+  const totalPages = Math.ceil(data.length / itemsPerPage);
 
   const toggleCollapse = (incidentId) => {
     if (expandedIncidentId === incidentId) {
@@ -32,73 +66,112 @@ function IncidentTable({ data, title }) {
     }
     return incident.impact === filterImpact;
   });
-  const update_url = (data) => {
-    const base_url = "/update/incident/";
-    const incident_id = data.id;
-    return base_url.concat(incident_id);
+  const update_url = (data, opsGenieId) => {
+    if (opsGenieId) {
+      return `/update/incident/${data.id}?opsGenieId=${opsGenieId}`;
+    } else {
+      return `/update/incident/${data.id}`;
+    }
   };
 
+  const fetchOpsgenieIncident = async (incidentName) => {
+    try {
+      const apiKey = `GenieKey ${process.env.REACT_APP_OPSGENIE_API_KEY}`;
+      const headers = {
+        Authorization: apiKey,
+        "Content-Type": "application/json",
+      };
+      const response = await axios.get(
+        "http://localhost:5001/getOpsGenieIncident",
+        { params: { message: incidentName }, headers }
+      );
+      
+      if (response.data.data && response.data.data.length > 0) {
+        const incidentData = response.data.data[0];
+        return incidentData;
+      } else {
+        console.warn("Opsgenie API Response is empty for:", incidentName);
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching Opsgenie incident:", error);
+      return null;
+    }
+  };
+  const Filters = () => {
+    return (
+      <div className="mb-4 flex justify-between items-center">
+      <div>
+        <select
+          className="px-3 py-2 border border-gray-300 rounded-md"
+          value={filterImpact}
+          onChange={(e) => setFilterImpact(e.target.value)}
+        >
+          <option value="">All Impacts</option>
+          <option value="maintenance">Maintenance</option>
+          <option value="critical">Critical</option>
+          <option value="major">Major</option>
+          <option value="minor">Minor</option>
+        </select>
+        <input
+          type="text"
+          placeholder="Incident Name..."
+          className="ml-4 px-3 py-2 border border-gray-300 rounded-md"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+    </div>
+    )
+  };
+
+  const MainTableHeaders = () => {
+    return (
+      <thead>
+      <tr>
+        <th
+          colSpan="8" 
+          className="bg-blue-500 underline bold text-lg text-white py-2 px-3"
+        >
+          {title}
+        </th>
+      </tr>
+      <tr className="bg-blue-500 text-white">
+        <th className="py-2 px-3 text-left">Incident Name</th>
+        <th className="py-2 px-3 text-left">Impact</th>
+        <th className="py-2 px-3 text-left">Status</th>
+        <th className="py-2 px-3 text-left">Created At</th>
+        <th className="py-2 px-3 text-left">Resolved At</th>
+        <th className="py-2 px-3 text-left">Updates</th>
+        <th className="py-2 px-3 text-left">Status Page Incident</th>
+        <th className="py-2 px-3 text-left">OpsGenie Incident</th>
+      </tr>
+    </thead>
+    )
+  };
+  
+  
   const searchedData = filteredData.filter((incident) => {
     if (searchTerm === "") {
       return true;
     }
     return incident.name.toLowerCase().includes(searchTerm.toLowerCase());
   });
+  const paginatedData = searchedData.slice(startIndex, endIndex);
 
   return (
     <div className="w-3/4 mx-auto rounded-lg overflow-hidden">
-      <div className="mb-4 flex justify-between items-center">
-        <div>
-          <select
-            className="px-3 py-2 border border-gray-300 rounded-md"
-            value={filterImpact}
-            onChange={(e) => setFilterImpact(e.target.value)}
-          >
-            <option value="">All Impacts</option>
-            <option value="maintenance">Maintenance</option>
-            <option value="critical">Critical</option>
-            <option value="major">Major</option>
-            <option value="minor">Minor</option>
-          </select>
-          <input
-            type="text"
-            placeholder="Search by Incident Name"
-            className="ml-4 px-3 py-2 border border-gray-300 rounded-md"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-      </div>
+      <Filters />
       <table className="min-w-full bg-white border border-blue-200">
-        {title && (
-          <thead>
-            <tr>
-              <th
-                colSpan="7"
-                className="bg-blue-500 underline bold text-lg text-white py-2 px-3"
-              >
-                {title}
-              </th>
-            </tr>
-          </thead>
-        )}
-        <thead>
-          <tr className="bg-blue-500 text-white">
-            <th className="py-2 px-3 text-left">Incident Name</th>
-            <th className="py-2 px-3 text-left">Impact</th>
-            <th className="py-2 px-3 text-left">Status</th>
-            <th className="py-2 px-3 text-left">Created At</th>
-            <th className="py-2 px-3 text-left">Resolved At</th>
-            <th className="py-2 px-3 text-left">Updates</th>
-            <th className="py-2 px-3 text-left">Details</th>
-          </tr>
-        </thead>
+        <MainTableHeaders />
         <tbody>
-          {searchedData.map((incident) => (
+          {paginatedData.map((incident) => (
             <React.Fragment key={incident.id}>
-              <tr className="border-t border-blue-200">
+              <tr className={`border-t border-blue-200 hover:bg-gray-100`}>
                 <td className="py-2 px-3 hover:underline">
-                  <a href={update_url(incident)}>{incident.name}</a>
+                  <a href={update_url(incident, opsgenieIncidentData[incident.name]?.id || false)}>
+                    {incident.name}
+                  </a>
                 </td>
                 <td className="py-2 px-3">{incident.impact}</td>
                 <td className="py-2 px-3">{incident.status}</td>
@@ -112,26 +185,41 @@ function IncidentTable({ data, title }) {
                     className="text-blue-500 hover:underline"
                   >
                     {expandedIncidentId === incident.id
-                      ? "Collapse"
-                      : "Updates"}
+                      ? "Collapse Updates"
+                      : "Expand Updates"}
                   </button>
                 </td>
                 <td className="py-2 px-3">
                   <Link
                     to={`https://manage.statuspage.io/pages/${process.env.REACT_APP_STATUSPAGE_PAGE_ID}/incidents/${incident.id}`}
                     className="text-blue-500 hover:underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    Details
+                    Status Page Incident
                   </Link>
+                </td>
+                <td className="py-2 px-3">
+                  {opsgenieIncidentData && opsgenieIncidentData[incident.name] ? (
+                    <Link
+                      to={`https://cfainstitute1.app.opsgenie.com/incident/detail/${opsgenieIncidentData[incident.name].id}`}
+                      className="text-blue-500 hover:underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      OpsGenie Incident
+                    </Link>
+                  ) : (
+                    "No OpsGenie Incident found"
+                  )}
                 </td>
               </tr>
               {expandedIncidentId === incident.id && (
                 <tr>
-                  <td colSpan="7">
+                  <td colSpan="8">
                     <div className="bg-gray-100 p-4 rounded-lg">
-                      {/* Display Incident Updates in a Table */}
                       <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                        Incident Updates
+                        Status Page Incident Updates
                       </h3>
                       <table className="min-w-full">
                         <thead>
@@ -165,6 +253,23 @@ function IncidentTable({ data, title }) {
           ))}
         </tbody>
       </table>
+      <div className="pagination flex justify-between items-center pb-28 pt-5">
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          className="px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+        <span>Page {currentPage} of {totalPages}</span>
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          className="px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }
@@ -235,11 +340,16 @@ export default function AllIncidentsPage() {
           <IncidentTable
             data={unresolvedIncidents}
             title="Unresolved Incidents"
+            itemsPerPage={10}
           />
         </>
       )}
 
-      <IncidentTable data={resolvedIncidents} title="Resolved Incidents" />
+      <IncidentTable 
+        data={resolvedIncidents} 
+        title="Resolved Incidents" 
+        itemsPerPage={10} 
+      />
     </div>
   );
 }

@@ -10,6 +10,11 @@
   margin-right: 12.5%; /* 1/8th of the screen width */
 }
 
+.hover-row:hover {
+  background-color: #f2f2f2; /* Change this to the color you want for the highlight */
+}
+
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;
