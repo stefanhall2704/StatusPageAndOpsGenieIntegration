@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -15,6 +15,8 @@ function IncidentForm() {
   const [priority, setPriority] = useState("");
   const [components, setComponents] = useState([]);
   const [error, setError] = useState(null);
+  const descriptionInputRef = useRef(null); // Create a ref
+  const titleInputRef = useRef(null); // Create a ref
 
   useEffect(() => {
     const apiKey = `OAuth ${process.env.REACT_APP_STATUSPAGE_API_KEY}`;
@@ -41,13 +43,20 @@ function IncidentForm() {
       });
   }, []);
 
-  const handleTitleChange = (e) => {
-    setTitle(e.target.value);
-  };
+  useEffect(() => {
+    if (descriptionInputRef.current) {
+      descriptionInputRef.current.focus();
+    }
+  }, [description]);
 
-  const handleDescriptionChange = (e) => {
-    setDescription(e.target.value);
-  };
+  useEffect(() => {
+    if (titleInputRef.current) {
+      titleInputRef.current.focus();
+    }
+  }, [title]);
+
+
+
   const handlePriorityChange = (e) => {
     setPriority(e.target.value);
   };
@@ -63,7 +72,21 @@ function IncidentForm() {
   const handleStatusChange = (e) => {
     setStatus(e.target.value);
   };
-
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    switch (name) {
+      case 'title':
+        setTitle(value);
+        break;
+      case 'description':
+        setDescription(value);
+        break;
+      // Add cases for other input fields
+      default:
+        break;
+    }
+  };
+  
   const createStatusPageIncident = async (
     title,
     description,
@@ -144,32 +167,35 @@ function IncidentForm() {
       <input
         type="text"
         id="title"
+        name="title" // Add the name attribute
         value={title}
-        onChange={handleTitleChange}
+        onChange={handleInputChange}
+        ref={titleInputRef} // Assign the ref
         className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:border-blue-500"
         required
       />
+
     </div>
     )
   };
   const IncidentDescription = () => {
     return (
       <div className="mb-4">
-      <label
-        htmlFor="description"
-        className="block text-gray-600 font-bold mb-2"
-      >
-        Description:
-      </label>
-      <textarea
-        id="description"
-        value={description}
-        onChange={handleDescriptionChange}
-        className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:border-blue-500"
-        required
-      />
-    </div>
-    )
+        <label htmlFor="description" className="block text-gray-600 font-bold mb-2">
+          Description:
+        </label>
+        <input
+          type="text"
+          id="description"
+          name="description" // Add the name attribute
+          value={description}
+          onChange={handleInputChange}
+          ref={descriptionInputRef} // Assign the ref
+          className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:border-blue-500"
+          required
+        />
+      </div>
+    );
   };
   const OpsGeniePriority = () => {
     return (

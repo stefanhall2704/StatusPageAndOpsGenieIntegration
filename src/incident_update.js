@@ -109,8 +109,44 @@ function IncidentUpdateForm() {
       });
   };
   
-  
 
+  const resolveOpsGenieIncident = async (opsGenieIncidentId) => {
+    try {
+      const opsGenieResponse = await axios.post(
+        `http://localhost:5001/resolveOpsGenieIncident?incidentId=${opsGenieIncidentId}`
+      );
+      console.log(opsGenieResponse.data);
+    } catch (error) {
+      console.error("Error updating Priority in OpsGenie incident:", error);
+      console.log("Response data:", error.response.data);
+    }
+  }
+
+  const updateOpsGenieIncidentPriority = async (opsGenieIncidentId) => {
+    try {
+
+      const opsGenieResponse = await axios.post(
+        `http://localhost:5001/updatePriorityOpsGenieIncident?incidentId=${opsGenieIncidentId}&priority=${opsgeniePriority}`
+      );
+      console.log(opsGenieResponse.data);
+    } catch (error) {
+      console.error("Error updating Priority in OpsGenie incident:", error);
+      console.log("Response data:", error.response.data);
+    }
+  }
+
+  const closeOpsGenieIncident = async (opsGenieIncidentId) => {
+    try {
+      const apiUrl = `http://localhost:5001/closeOpsGenieIncident?incidentId=${opsGenieIncidentId}`;
+      const response = await axios.post(
+        apiUrl
+      );
+      console.log("Ops Genie Incident Updated:", response.data);
+    } catch (error) {
+      console.error("Error updating OpsGenie incident:", error);
+      console.log("Response data:", error.response.data);
+    }
+  }
   const fetchOpsgenieIncident = async (opsGenieId) => {
     try {
       const apiUrl = `http://localhost:5001/getOpsGenieIncidentById?incidentId=${opsGenieId}`;
@@ -293,10 +329,6 @@ const OpsGenieIncidentStatusSelect = () => {
         <option value="identified">Identified</option>
         <option value="monitoring">Monitoring</option>
         <option value="resolved">Resolved</option>
-        <option value="scheduled">Scheduled</option>
-        <option value="in_progress">In Progress</option>
-        <option value="verifying">Verifying</option>
-        <option value="completed">Completed</option>
       </select>
     </div>
     )
@@ -376,6 +408,16 @@ const OpsGenieIncidentStatusSelect = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     updateStatusPageIncident(incidentStatus, impactOverride, componentIds, componentStatuses);
+    const queryParameters = new URLSearchParams(window.location.search);
+    const opsGenieId = queryParameters.get("opsGenieId");
+    if (opsGenieId !== null) {
+      updateOpsGenieIncidentPriority(opsGenieId);
+      if (opsgenieIncidentStatus === "resolved") {
+        resolveOpsGenieIncident(opsGenieId);
+      } else if (opsgenieIncidentStatus === "closed") {
+        closeOpsGenieIncident(opsGenieId);
+      }
+    }
     navigate("/");
   };
 
