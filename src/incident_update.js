@@ -113,7 +113,7 @@ function IncidentUpdateForm() {
   const resolveOpsGenieIncident = async (opsGenieIncidentId) => {
     try {
       const opsGenieResponse = await axios.post(
-        `http://localhost:5001/resolveOpsGenieIncident?incidentId=${opsGenieIncidentId}`
+        `${process.env.REACT_APP_DOMAIN}:5001/resolveOpsGenieIncident?incidentId=${opsGenieIncidentId}`
       );
       console.log(opsGenieResponse.data);
     } catch (error) {
@@ -126,7 +126,7 @@ function IncidentUpdateForm() {
     try {
 
       const opsGenieResponse = await axios.post(
-        `http://localhost:5001/updatePriorityOpsGenieIncident?incidentId=${opsGenieIncidentId}&priority=${opsgeniePriority}`
+        `http://${process.env.REACT_APP_DOMAIN}:5001/updatePriorityOpsGenieIncident?incidentId=${opsGenieIncidentId}&priority=${opsgeniePriority}`
       );
       console.log(opsGenieResponse.data);
     } catch (error) {
@@ -137,7 +137,7 @@ function IncidentUpdateForm() {
 
   const closeOpsGenieIncident = async (opsGenieIncidentId) => {
     try {
-      const apiUrl = `http://localhost:5001/closeOpsGenieIncident?incidentId=${opsGenieIncidentId}`;
+      const apiUrl = `http://${process.env.REACT_APP_DOMAIN}:5001/closeOpsGenieIncident?incidentId=${opsGenieIncidentId}`;
       const response = await axios.post(
         apiUrl
       );
@@ -149,7 +149,7 @@ function IncidentUpdateForm() {
   }
   const fetchOpsgenieIncident = async (opsGenieId) => {
     try {
-      const apiUrl = `http://localhost:5001/getOpsGenieIncidentById?incidentId=${opsGenieId}`;
+      const apiUrl = `http://${process.env.REACT_APP_DOMAIN}:5001/getOpsGenieIncidentById?incidentId=${opsGenieId}`;
       const response = await axios.get(apiUrl);
       const initialOpsgenieIncidentStatus = response.data.data.status;
       const initialOpsGenieIncidentPriority = response.data.data.priority;

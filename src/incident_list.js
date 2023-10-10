@@ -82,7 +82,7 @@ function IncidentTable({ data, title, itemsPerPage }) {
         "Content-Type": "application/json",
       };
       const response = await axios.get(
-        "http://localhost:5001/getOpsGenieIncident",
+        `http://${process.env.REACT_APP_DOMAIN}:5001/getOpsGenieIncident`,
         { params: { message: incidentName }, headers }
       );
       
@@ -202,7 +202,7 @@ function IncidentTable({ data, title, itemsPerPage }) {
                 <td className="py-2 px-3">
                   {opsgenieIncidentData && opsgenieIncidentData[incident.name] ? (
                     <Link
-                      to={`https://cfainstitute1.app.opsgenie.com/incident/detail/${opsgenieIncidentData[incident.name].id}`}
+                      to={`https://${process.env.REACT_OPSGENIE_DOMAIN}.app.opsgenie.com/incident/detail/${opsgenieIncidentData[incident.name].id}`}
                       className="text-blue-500 hover:underline"
                       target="_blank"
                       rel="noopener noreferrer"

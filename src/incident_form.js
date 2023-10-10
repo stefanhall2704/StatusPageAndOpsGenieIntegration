@@ -145,7 +145,7 @@ function IncidentForm() {
         notifications: notifications,
       };
       const opsGenieResponse = await axios.post(
-        "http://localhost:5001/createOpsGenieIncident",
+        `http://${process.env.REACT_APP_DOMAIN}:5001/createOpsGenieIncident`,
         opsGenieFormData
       );
       console.log("OpsGenie Incident Created:", opsGenieResponse.data);
