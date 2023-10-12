@@ -225,6 +225,8 @@ const OpsGeniePriority = () => {
 };
 
 const HandleManualOpsGenieIncidentLinking = () => {
+  // When an incident title in Status Page does not match the OpsGenie 'message'(which is the equivalent in this case), and you can link it directly.
+  // Note that this is not cached at this time, so each time you try to make an edit to the incident, you will have to re-manually link it again.
   return (
     <div className="mb-4">
     <div className="mb-4">
